@@ -28,6 +28,11 @@ public:
 
   void getID(char *output);
   void getReaderVersion();
+  uint8_t getSingleSetting(uint8_t settingAddress);
+  bool setSingleSetting(uint8_t settingAddress, uint8_t settingValue);
+  uint8_t getTransmitPower();
+  bool setTransmitPower(uint8_t value);
+  bool reset();
 
 private:
   Stream& _serial;
