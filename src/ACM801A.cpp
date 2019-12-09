@@ -99,12 +99,71 @@ void ACM801A::getReaderVersion() {
   _pktBuffer[3] = Checksum(_pktBuffer, 3);
   _serial.write(_pktBuffer, 4); // Send identify command to reader
   _serial.readBytes(_pktBuffer, 6); // Read response
-  if (_pktBuffer[5] != Checksum(_pktBuffer, 5)) { Serial.println("CRC Error"); }
-  if (_pktBuffer[0] != 0xE0) { Serial.println("Unexpected response code"); }
-  if (_pktBuffer[1] != 0x04) { Serial.println("Wrong response length byte"); }
-  if (_pktBuffer[2] != 0x6A) { Serial.println("Wrong response cmd byte"); }
+  if (_pktBuffer[5] != Checksum(_pktBuffer, 5)) { Serial.println("CRC Error"); return; }
+  if (_pktBuffer[0] != 0xE0) { Serial.println("Unexpected response code"); return; }
+  if (_pktBuffer[1] != 0x04) { Serial.println("Wrong response length byte"); return; }
+  if (_pktBuffer[2] != 0x6A) { Serial.println("Wrong response cmd byte"); return; }
   char versionInfo[5];
   sprintHex(versionInfo, _pktBuffer, 3, 2);
   Serial.print("SW Version: ");
   Serial.println(versionInfo);
+}
+
+uint8_t ACM801A::getTransmitPower() {
+  return getSingleSetting(0x65);
+}
+
+bool ACM801A::setTransmitPower(uint8_t value) {
+  if (value > 150) return false;
+  return setSingleSetting(0x65, value);
+}
+
+bool ACM801A::reset() {
+  _pktBuffer[0] = 0xA0;
+  _pktBuffer[1] = 0x02; // Packet length
+  _pktBuffer[2] = 0x65; // Reader reset
+  _pktBuffer[3] = Checksum(_pktBuffer, 3); // CRC
+  _serial.write(_pktBuffer, 4); // Send command to reader
+  _serial.readBytes(_pktBuffer, 5);
+  if (_pktBuffer[4] != Checksum(_pktBuffer, 4)) { return false; }
+  if (_pktBuffer[0] != 0xE4) { return false; }
+  if (_pktBuffer[1] != 0x03) { return false; }
+  if (_pktBuffer[2] != 0x65) { return false; }
+  if (_pktBuffer[3] != 0x00) { return false; }
+  return true;
+}
+
+uint8_t ACM801A::getSingleSetting(uint8_t settingAddress) {
+  _pktBuffer[0] = 0xA0;
+  _pktBuffer[1] = 0x04; // Packet length
+  _pktBuffer[2] = 0x61; // Read single setting parameter
+  _pktBuffer[3] = 0x00; // Setting parameter MSB
+  _pktBuffer[4] = settingAddress; // Setting parameter LSB
+  _pktBuffer[5] = Checksum(_pktBuffer, 5); // CRC
+  _serial.write(_pktBuffer, 6); // Send command to reader
+  _serial.readBytes(_pktBuffer, 7); // Read response
+  if (_pktBuffer[6] != Checksum(_pktBuffer, 6)) { return 0; }
+  if (_pktBuffer[0] != 0xE0) { return 0; }
+  if (_pktBuffer[1] != 0x05) { return 0; }
+  if (_pktBuffer[2] != 0x61) { return 0; }
+  if (_pktBuffer[4] != settingAddress) { return 0; }
+  return _pktBuffer[5];
+}
+
+bool ACM801A::setSingleSetting(uint8_t settingAddress, uint8_t settingValue) {
+  _pktBuffer[0] = 0xA0;
+  _pktBuffer[1] = 0x05; // Packet length
+  _pktBuffer[2] = 0x60; // Write single setting parameter
+  _pktBuffer[3] = 0x00; // Setting parameter MSB
+  _pktBuffer[4] = settingAddress; // Setting parameter LSB
+  _pktBuffer[5] = settingValue;
+  _pktBuffer[6] = Checksum(_pktBuffer, 6); // CRC
+  _serial.write(_pktBuffer, 7); // Send command to reader
+  _serial.readBytes(_pktBuffer, 5);
+  if (_pktBuffer[4] != Checksum(_pktBuffer, 4)) { return false; }
+  if (_pktBuffer[0] != 0xE4) { return false; }
+  if (_pktBuffer[1] != 0x03) { return false; }
+  if (_pktBuffer[2] != 0x60) { return false; }
+  if (_pktBuffer[3] != 0x00) { return false; }
+  return true;
 }
