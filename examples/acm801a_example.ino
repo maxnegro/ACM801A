@@ -1,10 +1,8 @@
 #include <SoftwareSerial.h>
 #include <ACM801A.h>
 
-class RfidNotify {
-
-};
-
+// Reader serial cable is connected to Arduino pins 3 (TX) and 4 (RX) via
+// TTL<->RS232 adapter based on MAX232
 SoftwareSerial acmSerial(4,3);
 ACM801A rfid(acmSerial);
 
@@ -16,7 +14,7 @@ void setup() {
   rfid.begin();
   rfid.getReaderVersion();
   if (rfid.setTransmitPower(50)) { // Transmit power range is 0..150
-    if (rfid.reset()) {
+    if (rfid.reset()) { // Reader must be reset in order to use new settings
       Serial.print("Transmit power: ");
       Serial.println(rfid.getTransmitPower());
     } else {
