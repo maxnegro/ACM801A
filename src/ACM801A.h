@@ -1,5 +1,5 @@
-#ifndef Template_h
-#define Template_h
+#ifndef ACM801A_h
+#define ACM801A_h
 
 // If you want to support Arduino versions older than 1.0 you need to do this if
 #if ARDUINO >= 100
