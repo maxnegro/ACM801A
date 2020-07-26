@@ -9,5 +9,9 @@ Reader must be connected to Arduino via RS232<->TTL hardware (ie MAX232). Defaul
 reader baud rate is 9600 (and this is good for Arduino UNO boards where control
 is done via SoftwareSerial).
 
-I have not tested or implemented RS485 and Wiegand protocol for reading tag 
+I have not tested or implemented RS485 and Wiegand protocol for reading tag
 identities.
+
+## Usage
+
+Please refer to example code.
